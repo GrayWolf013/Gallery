@@ -6,12 +6,15 @@ public protocol GalleryControllerDelegate: class {
 	func galleryController(_ controller: GalleryController, didSelectImages images: [Image])
 	func galleryController(_ controller: GalleryController, didSelectVideo video: Video)
 	func galleryController(_ controller: GalleryController, requestLightbox images: [Image])
+    func galleryController(_ controller: GalleryController, requestLightbox image: Image)
 	func galleryControllerDidCancel(_ controller: GalleryController)
 }
 
 open class GalleryController: UIViewController, PermissionControllerDelegate {
 	
 	public weak var delegate: GalleryControllerDelegate?
+    
+    private var imagesController: ImagesController?
 	
 	public let cart = Cart()
 	
@@ -42,9 +45,13 @@ open class GalleryController: UIViewController, PermissionControllerDelegate {
 	open override var prefersStatusBarHidden : Bool {
 		return Config.showStatusBar
 	}
+    
+    // MARK: - Public func
+    public func handleSelect(_ image: Image) {
+        imagesController?.handleSelect(image)
+    }
 	
 	// MARK: - Child view controller
-	
 	func makeImagesController() -> ImagesController {
 		let controller = ImagesController(cart: cart)
 		controller.title = "Gallery.Images.Title".g_localize(fallback: "PHOTOS")
@@ -77,7 +84,8 @@ open class GalleryController: UIViewController, PermissionControllerDelegate {
 		
 		let controllers: [UIViewController] = tabsToShow.compactMap { tab in
 			if tab == .imageTab {
-				return makeImagesController()
+                imagesController = makeImagesController()
+				return imagesController
 			} else if tab == .cameraTab {
 				return makeCameraController()
 			} else if tab == .videoTab {
@@ -107,29 +115,35 @@ open class GalleryController: UIViewController, PermissionControllerDelegate {
 	// MARK: - Setup
 	
 	func setup() {
-		EventHub.shared.close = { [weak self] in
+		EventHub.shared.close = {[weak self] _ in
 			if let strongSelf = self {
 				strongSelf.delegate?.galleryControllerDidCancel(strongSelf)
 			}
 		}
 		
-		EventHub.shared.doneWithImages = { [weak self] in
+		EventHub.shared.doneWithImages = { [weak self] _ in
 			if let strongSelf = self {
 				strongSelf.delegate?.galleryController(strongSelf, didSelectImages: strongSelf.cart.images)
 			}
 		}
 		
-		EventHub.shared.doneWithVideos = { [weak self] in
+		EventHub.shared.doneWithVideos = { [weak self] _ in
 			if let strongSelf = self, let video = strongSelf.cart.video {
 				strongSelf.delegate?.galleryController(strongSelf, didSelectVideo: video)
 			}
 		}
 		
-		EventHub.shared.stackViewTouched = { [weak self] in
+		EventHub.shared.stackViewTouched = { [weak self] _ in
 			if let strongSelf = self {
 				strongSelf.delegate?.galleryController(strongSelf, requestLightbox: strongSelf.cart.images)
 			}
 		}
+        
+        EventHub.shared.previewImage = { [weak self] image in
+            if let strongSelf = self {
+                strongSelf.delegate?.galleryController(strongSelf, requestLightbox: image)
+            }
+        }
 	}
 	
 	// MARK: - PermissionControllerDelegate

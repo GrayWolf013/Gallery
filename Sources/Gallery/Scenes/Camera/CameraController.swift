@@ -76,7 +76,7 @@ class CameraController: UIViewController {
 	// MARK: - Action
 	
 	@objc func closeButtonTouched(_ button: UIButton) {
-		EventHub.shared.close?()
+		EventHub.shared.close?(())
 	}
 	
 	@objc func flashButtonTouched(_ button: UIButton) {
@@ -100,7 +100,7 @@ class CameraController: UIViewController {
 	}
 	
 	@objc func stackViewTouched(_ stackView: StackView) {
-		EventHub.shared.stackViewTouched?()
+		EventHub.shared.stackViewTouched?(())
 	}
 	
 	@objc func shutterButtonTouched(_ button: ShutterButton) {
@@ -132,7 +132,7 @@ class CameraController: UIViewController {
 	}
 	
 	@objc func doneButtonTouched(_ button: UIButton) {
-		EventHub.shared.doneWithImages?()
+		EventHub.shared.doneWithImages?(())
 	}
 	
 	fileprivate func isBelowImageLimit() -> Bool {

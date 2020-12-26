@@ -84,11 +84,11 @@ class ImagesController: UIViewController {
 	// MARK: - Action
 	
 	@objc func closeButtonTouched(_ button: UIButton) {
-		EventHub.shared.close?()
+        EventHub.shared.close?(())
 	}
 	
 	@objc func doneButtonTouched(_ button: UIButton) {
-		EventHub.shared.doneWithImages?()
+		EventHub.shared.doneWithImages?(())
 	}
 	
 	@objc func arrowButtonTouched(_ button: ArrowButton) {
@@ -97,7 +97,7 @@ class ImagesController: UIViewController {
 	}
 	
 	@objc func stackViewTouched(_ stackView: StackView) {
-		EventHub.shared.stackViewTouched?()
+		EventHub.shared.stackViewTouched?(())
 	}
 	
 	// MARK: - Logic
@@ -169,7 +169,7 @@ extension ImagesController: PageAware {
 extension ImagesController: CartDelegate {
 	
 	func cart(_ cart: Cart, didAdd image: Image, newlyTaken: Bool) {
-		stackView.reload(cart.images, added: true)
+        reload(with: cart.images, added: true)
 		refreshView()
 		
 		if newlyTaken {
@@ -178,15 +178,24 @@ extension ImagesController: CartDelegate {
 	}
 	
 	func cart(_ cart: Cart, didRemove image: Image) {
-		stackView.reload(cart.images)
+        reload(with: cart.images, added: false)
 		refreshView()
 	}
 	
 	func cartDidReload(_ cart: Cart) {
-		stackView.reload(cart.images)
+        reload(with: cart.images, added: false)
 		refreshView()
 		refreshSelectedAlbum()
 	}
+    
+    private func reload(with images: [Image], added: Bool) {
+    
+        stackView.reload(images, added: added)
+    
+        let limit = Config.Camera.imageLimit
+        let selected = images.count
+        gridView.progressLabel.text = "\(selected)/\(limit) Items Selected"
+    }
 }
 
 extension ImagesController: DropdownControllerDelegate {
@@ -235,11 +244,23 @@ extension ImagesController: UICollectionViewDataSource, UICollectionViewDelegate
 		if isMultipleSelectionModeActive {
 			handleSelect(item)
 		} else {
-			let preview = PreviewImageViewController()
-			preview.configure(with: item, delegate: self)
-			present(preview, animated: true, completion: nil)
+            EventHub.shared.previewImage?(item)
 		}
 	}
+    
+    func handleSelect(_ image: Image) {
+        if cart.images.contains(image) {
+            cart.remove(image)
+        } else {
+            if Config.Camera.imageLimit == 0 || Config.Camera.imageLimit > cart.images.count {
+                cart.add(image)
+            }
+        }
+        
+        isMultipleSelectionModeActive = !cart.images.isEmpty
+        
+        configureFrameViews()
+    }
 	
 	@objc func handleLongPress(gesture: UILongPressGestureRecognizer) {
 		guard gesture.state != .ended else { return }
@@ -255,20 +276,6 @@ extension ImagesController: UICollectionViewDataSource, UICollectionViewDelegate
 		}
 	}
 	
-	func handleSelect(_ image: Image) {
-		if cart.images.contains(image) {
-			cart.remove(image)
-		} else {
-			if Config.Camera.imageLimit == 0 || Config.Camera.imageLimit > cart.images.count {
-				cart.add(image)
-			}
-		}
-		
-		isMultipleSelectionModeActive = !cart.images.isEmpty
-		
-		configureFrameViews()
-	}
-	
 	func configureFrameViews() {
 		for case let cell as ImageCell in gridView.collectionView.visibleCells {
 			if let indexPath = gridView.collectionView.indexPath(for: cell) {
@@ -281,7 +288,7 @@ extension ImagesController: UICollectionViewDataSource, UICollectionViewDelegate
 		let item = items[(indexPath as NSIndexPath).item]
 		if let index = cart.images.firstIndex(of: item) {
 			cell.frameView.g_quickFade()
-			cell.frameView.label.text = "\(index + 1)"
+            cell.frameView.selectedImageView.isHidden = false
 			cell.contentView.alpha = 1
 		} else {
 			cell.frameView.alpha = 0
@@ -290,14 +297,6 @@ extension ImagesController: UICollectionViewDataSource, UICollectionViewDelegate
 			} else {
 				cell.contentView.alpha = 1
 			}
-		}
-	}
-}
-
-extension ImagesController: PreviewImageDelegate {
-	func didSelect(_ image: Image?) {
-		if let image = image {
-			handleSelect(image)
 		}
 	}
 }

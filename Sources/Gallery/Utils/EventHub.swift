@@ -1,17 +1,18 @@
 import Foundation
 
 class EventHub {
-
-  typealias Action = () -> Void
-
-  static let shared = EventHub()
-
-  // MARK: Initialization
-
-  init() {}
-
-  var close: Action?
-  var doneWithImages: Action?
-  var doneWithVideos: Action?
-  var stackViewTouched: Action?
+    
+    typealias Action<C> = (C) -> Void
+    
+    static let shared = EventHub()
+    
+    // MARK: Initialization
+    
+    init() {}
+    
+    var close: Action<Void>?
+    var doneWithImages: Action<Void>?
+    var doneWithVideos: Action<Void>?
+    var stackViewTouched: Action<Void>?
+    var previewImage: Action<Image>?
 }

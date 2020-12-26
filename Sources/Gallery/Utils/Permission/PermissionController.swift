@@ -74,7 +74,7 @@ class PermissionController: UIViewController {
   }
 
   @objc func closeButtonTouched(_ button: UIButton) {
-    EventHub.shared.close?()
+    EventHub.shared.close?(())
   }
 
   // MARK: - Controls
