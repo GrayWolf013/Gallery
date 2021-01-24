@@ -15,8 +15,26 @@ public struct Config {
 		case cameraTab
 		case videoTab
 	}
+    
+    public enum CameraPreset: String {
+        case low = "Low"
+        case medium = "Medium"
+        case high = "High"
+        case original = "Original"
+    }
+    
+    public static var cameraPreset: CameraPreset = .medium
+    
+    public struct Toast {
+        public static var toastFont: UIFont = .preferredFont(forTextStyle: .headline)
+        public static var maxImagesSize: Double = 8.9
+        public static var infoImage: UIImage? = nil
+        public static var maxImageSizeText: String = "The attachement size exceeds the 9 MB limit."
+    }
+    
 	
 	public struct PageIndicator {
+        public static var isVisible: Bool = false
 		public static var backgroundColor: UIColor = UIColor(red: 0, green: 3/255, blue: 10/255, alpha: 1)
 		public static var textColor: UIColor = UIColor.white
 	}
@@ -24,7 +42,20 @@ public struct Config {
 	public struct Camera {
 		
 		public static var recordLocation: Bool = false
-		
+      
+        public struct RotateButton {
+            public static var image: UIImage?
+        }
+        
+        public struct GalleryButton {
+            public static var image: UIImage?
+        }
+        
+        public struct FlashButton {
+            public static var onImage: UIImage?
+            public static var offImage: UIImage?
+        }
+        
 		public struct ShutterButton {
 			public static var numberColor: UIColor = UIColor(red: 54/255, green: 56/255, blue: 62/255, alpha: 1)
 		}

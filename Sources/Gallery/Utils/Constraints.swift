@@ -26,12 +26,12 @@ extension UIView {
     return constraint
   }
 
-  func g_pinEdges(view: UIView? = nil) {
-    g_pin(on: .top, view: view)
-    g_pin(on: .bottom, view: view)
-    g_pin(on: .left, view: view)
-    g_pin(on: .right, view: view)
-  }
+    func g_pinEdges(view: UIView? = nil, insets: UIEdgeInsets? = nil) {
+        g_pin(on: .top, view: view, constant: insets?.top ?? .zero)
+        g_pin(on: .bottom, view: view, constant: insets?.bottom ?? .zero)
+        g_pin(on: .left, view: view, constant: insets?.left ?? .zero)
+        g_pin(on: .right, view: view, constant: insets?.right ?? .zero)
+    }
 
   func g_pin(size: CGSize) {
     g_pin(width: size.width)

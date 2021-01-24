@@ -118,7 +118,7 @@ class StackView: UIControl{
     }
 
     // Update images into views
-    renderViews(images.map { $0.asset })
+    renderViews(images.compactMap { $0.asset })
 
     // Update count label
     if let topVisibleView = imageViews.filter({ $0.alpha == 1.0 }).last , images.count > 1 {

@@ -9,24 +9,27 @@ protocol CameraManDelegate: class {
 	func cameraMan(_ cameraMan: CameraMan, didChangeInput input: AVCaptureDeviceInput)
 }
 
-class CameraMan {
+class CameraMan: NSObject {
 	weak var delegate: CameraManDelegate?
 	
 	let session = AVCaptureSession()
 	let queue = DispatchQueue(label: "no.hyper.Gallery.Camera.SessionQueue", qos: .background)
-	let savingQueue = DispatchQueue(label: "no.hyper.Gallery.Camera.SavingQueue", qos: .background)
+    let savingQueue = DispatchQueue(label: "no.hyper.Gallery.Camera.SavingQueue", qos: .userInteractive)
 	let orientationMan = OrientationMan()
 	
 	var backCamera: AVCaptureDeviceInput?
 	var frontCamera: AVCaptureDeviceInput?
-	var stillImageOutput: AVCaptureStillImageOutput?
-	
+    var photoOutput: AVCapturePhotoOutput?
+        
+    private var captureImageCompletion: ((PHAsset?) -> Void)?
+    private var captureImageLocation: CLLocation?
+    private var flashMode: AVCaptureDevice.FlashMode = .off
+    
 	deinit {
 		stop()
 	}
 	
 	// MARK: - Setup
-	
 	func setup() {
 		if Permission.Camera.status == .authorized {
 			self.start()
@@ -34,6 +37,10 @@ class CameraMan {
 			self.delegate?.cameraManNotAvailable(self)
 		}
 	}
+    
+    func configurePreset() {
+        configurePreset(device: currentInput?.device)
+    }
 	
 	func setupDevices() {
 		// Input
@@ -53,12 +60,12 @@ class CameraMan {
 			}
 		
 		// Output
-		stillImageOutput = AVCaptureStillImageOutput()
-		stillImageOutput?.outputSettings = [AVVideoCodecKey: AVVideoCodecJPEG]
+        photoOutput = AVCapturePhotoOutput()
+        photoOutput?.setPreparedPhotoSettingsArray([AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.jpeg])])
 	}
 	
 	func addInput(_ input: AVCaptureDeviceInput) {
-		configurePreset(input)
+        configurePreset(device: input.device)
 		
 		if session.canAddInput(input) {
 			session.addInput(input)
@@ -79,7 +86,7 @@ class CameraMan {
 		// Devices
 		setupDevices()
 		
-		guard let input = backCamera, let output = stillImageOutput else { return }
+		guard let input = backCamera, let output = photoOutput else { return }
 		
 		addInput(input)
 		
@@ -128,70 +135,44 @@ class CameraMan {
 	}
 	
 	func takePhoto(_ previewLayer: AVCaptureVideoPreviewLayer, location: CLLocation?, completion: @escaping ((PHAsset?) -> Void)) {
-		guard let connection = stillImageOutput?.connection(with: .video) else { return }
-		
-		// It should be set the image orientation with the device current orientation
-		connection.videoOrientation = self.orientationMan.videoOrientation()
-		
-		queue.async {
-			self.stillImageOutput?.captureStillImageAsynchronously(from: connection) {
-				buffer, error in
-				
-				guard error == nil, let buffer = buffer, CMSampleBufferIsValid(buffer),
-					  let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(buffer),
-					  let image = UIImage(data: imageData)
-				else {
-					DispatchQueue.main.async {
-						completion(nil)
-					}
-					return
-				}
-				
-				self.savePhoto(image, location: location, completion: completion)
-			}
-		}
+        self.captureImageCompletion = completion
+        self.captureImageLocation = location
+        
+        let settings = AVCapturePhotoSettings()
+        photoOutput?.capturePhoto(with: settings, delegate: self)
 	}
 	
-	func savePhoto(_ image: UIImage, location: CLLocation?, completion: @escaping ((PHAsset?) -> Void)) {
+	func savePhoto(_ image: UIImage) {
 		var localIdentifier: String?
 		
-		savingQueue.async {
+		savingQueue.async { [weak self] in
 			do {
 				try PHPhotoLibrary.shared().performChangesAndWait {
 					let request = PHAssetChangeRequest.creationRequestForAsset(from: image)
 					localIdentifier = request.placeholderForCreatedAsset?.localIdentifier
 					
 					request.creationDate = Date()
-					request.location = location
+                    request.location = self?.captureImageLocation
 				}
+                if let localIdentifier = localIdentifier {
+                    self?.captureImageCompletion?(Fetcher.fetchAsset(localIdentifier))
+                } else {
+                    self?.captureImageCompletion?(nil)
+                }
 				
-				DispatchQueue.main.async {
-					if let localIdentifier = localIdentifier {
-						completion(Fetcher.fetchAsset(localIdentifier))
-					} else {
-						completion(nil)
-					}
-				}
 			} catch {
-				DispatchQueue.main.async {
-					completion(nil)
-				}
+                self?.captureImageCompletion?(nil)
 			}
 		}
 	}
-	
+    
 	func flash(_ mode: AVCaptureDevice.FlashMode) {
-		guard let device = currentInput?.device , device.isFlashModeSupported(mode) else { return }
-		
-		queue.async {
-			self.lock {
-				device.flashMode = mode
-			}
-		}
+        self.flashMode = mode
 	}
 	
 	func focus(_ point: CGPoint) {
-		guard let device = currentInput?.device , device.isFocusModeSupported(AVCaptureDevice.FocusMode.locked) else { return }
+		guard let device = currentInput?.device ,
+              device.isFocusModeSupported(AVCaptureDevice.FocusMode.locked) else { return }
 		
 		queue.async {
 			self.lock {
@@ -217,22 +198,55 @@ class CameraMan {
 	}
 	
 	// MARK: - Preset
-	
-	func configurePreset(_ input: AVCaptureDeviceInput) {
-		for asset in preferredPresets() {
-			if input.device.supportsSessionPreset(asset) && self.session.canSetSessionPreset(asset) {
-				self.session.sessionPreset = asset
-				return
-			}
-		}
-	}
-	
-	func preferredPresets() -> [AVCaptureSession.Preset] {
-		return [
-			.photo,
-			.high,
-			.medium,
-			.low
-		]
-	}
+    func configurePreset(device: AVCaptureDevice?) {
+        guard let device = device else { return }
+        switch Config.cameraPreset {
+        case .low:
+            if device.supportsSessionPreset(.low),
+               session.canSetSessionPreset(.low) {
+                self.session.sessionPreset = .low
+            }
+            
+        case .medium:
+            if device.supportsSessionPreset(.medium),
+               session.canSetSessionPreset(.medium) {
+                self.session.sessionPreset = .medium
+            }
+            
+        case .high:
+            if device.supportsSessionPreset(.high),
+               session.canSetSessionPreset(.high) {
+                self.session.sessionPreset = .high
+            }
+            
+        case.original:
+            if device.supportsSessionPreset(.photo),
+               session.canSetSessionPreset(.photo) {
+                self.session.sessionPreset = .photo
+            }
+        }
+    }
+}
+
+
+extension CameraMan: AVCapturePhotoCaptureDelegate {
+    func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
+        
+        guard error == nil,
+              let imageData = photo.fileDataRepresentation(),
+              let image = UIImage(data: imageData)
+        else {
+            self.captureImageCompletion?(nil)
+            self.reset()
+            return
+        }
+        
+        self.savePhoto(image)
+    }
+    
+    
+    private func reset() {
+        self.captureImageCompletion = nil
+        self.captureImageLocation = nil
+    }
 }

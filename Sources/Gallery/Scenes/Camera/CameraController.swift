@@ -22,7 +22,6 @@ class CameraController: UIViewController {
 	}
 	
 	// MARK: - Life cycle
-	
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		
@@ -54,6 +53,14 @@ class CameraController: UIViewController {
 	}
 	
 	// MARK: - Setup
+    
+    func handleToast(_ isHidden: Bool) {
+        cameraView.handleToast(isHidden)
+    }
+    
+    func configurePreset() {
+        cameraMan.configurePreset()
+    }
 	
 	func setup() {
 		view.addSubview(cameraView)
@@ -65,6 +72,7 @@ class CameraController: UIViewController {
 		cameraView.stackView.addTarget(self, action: #selector(stackViewTouched(_:)), for: .touchUpInside)
 		cameraView.shutterButton.addTarget(self, action: #selector(shutterButtonTouched(_:)), for: .touchUpInside)
 		cameraView.doneButton.addTarget(self, action: #selector(doneButtonTouched(_:)), for: .touchUpInside)
+        cameraView.galleryButton.addTarget(self, action: #selector(galleryButtonTouched(_:)), for: .touchUpInside)
 	}
 	
 	func setupLocation() {
@@ -86,6 +94,9 @@ class CameraController: UIViewController {
 			cameraMan.flash(flashMode)
 		}
 	}
+    @objc func galleryButtonTouched(_ button: UIButton) {
+        EventHub.shared.requestScrollToGallery?(())
+    }
 	
 	@objc func rotateButtonTouched(_ button: UIButton) {
 		UIView.animate(withDuration: 0.3, animations: {
@@ -118,16 +129,16 @@ class CameraController: UIViewController {
 		
 		self.cameraView.stackView.startLoading()
 		cameraMan.takePhoto(previewLayer, location: locationManager?.latestLocation) { [weak self] asset in
-			guard let strongSelf = self else {
-				return
-			}
-			
-			button.isEnabled = true
-			strongSelf.cameraView.stackView.stopLoading()
-			
-			if let asset = asset {
-				strongSelf.cart.add(Image(asset: asset), newlyTaken: true)
-			}
+			guard let self = self else { return }
+            DispatchQueue.main.async {
+                button.isEnabled = true
+                self.cameraView.stackView.stopLoading()
+                
+                if let asset = asset {
+                    self.cart.add(Image(asset: asset), newlyTaken: true)
+                    EventHub.shared.imageCaptured?(())
+                }
+            }
 		}
 	}
 	
@@ -140,7 +151,6 @@ class CameraController: UIViewController {
 	}
 	
 	// MARK: - View
-	
 	func refreshView() {
 		let hasImages = !cart.images.isEmpty
 		cameraView.bottomView.g_fade(visible: hasImages)

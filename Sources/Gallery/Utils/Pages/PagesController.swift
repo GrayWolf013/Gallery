@@ -82,11 +82,24 @@ class PagesController: UIViewController {
 
     return indicator
   }
+    
+    func scroll(to tab: Config.GalleryTab) {
+        switch tab {
+        case .imageTab:
+            scrollTo(index: 0, animated: true)
+            
+        case .cameraTab:
+            scrollTo(index: 1, animated: true)
+
+        case .videoTab:
+            scrollTo(index: 2, animated: true)
+        }
+    }
 
   // MARK: - Setup
 
   func setup() {
-    let usePageIndicator = controllers.count > 1
+    let usePageIndicator = controllers.count > 1 && Config.PageIndicator.isVisible
     if usePageIndicator {
       view.addSubview(pageIndicator)
       Constraint.on(
@@ -94,7 +107,7 @@ class PagesController: UIViewController {
         pageIndicator.rightAnchor.constraint(equalTo: pageIndicator.superview!.rightAnchor),
         pageIndicator.heightAnchor.constraint(equalToConstant: 40)
       )
-      
+
       if #available(iOS 11, *) {
         Constraint.on(
           pageIndicator.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)

@@ -13,7 +13,9 @@ class ImagesController: UIViewController {
 	let once = Once()
 	let cart: Cart
 	
-	private var isMultipleSelectionModeActive = false
+    private var isMultipleSelectionModeActive: Bool {
+        return !cart.images.isEmpty
+    }
 	
 	// MARK: - Init
 	public required init(cart: Cart) {
@@ -101,7 +103,10 @@ class ImagesController: UIViewController {
 	}
 	
 	// MARK: - Logic
-	
+    func handleToast(_ isHidden: Bool) {
+        gridView.handleToast(isHidden)
+    }
+    
 	func show(album: Album) {
 		gridView.arrowButton.updateText(album.collection.localizedTitle ?? "")
 		items = album.items
@@ -256,9 +261,7 @@ extension ImagesController: UICollectionViewDataSource, UICollectionViewDelegate
                 cart.add(image)
             }
         }
-        
-        isMultipleSelectionModeActive = !cart.images.isEmpty
-        
+                
         configureFrameViews()
     }
 	

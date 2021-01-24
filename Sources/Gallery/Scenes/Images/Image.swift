@@ -19,19 +19,34 @@ extension Image {
     
     /// Resolve UIImage synchronously
     ///
-    /// - Parameter size: The target size
     /// - Returns: The resolved UIImage, otherwise nil
     public func resolve(completion: @escaping (UIImage?) -> Void) {
         let options = PHImageRequestOptions()
         options.isNetworkAccessAllowed = true
         options.deliveryMode = .highQualityFormat
-        
+        options.resizeMode = .exact
         PHImageManager.default().requestImage(
             for: asset,
-            targetSize: PHImageManagerMaximumSize,
+            targetSize: getTargetSize(),
             contentMode: .default,
-            options: options) { (image, _) in
+            options: options) { [weak self] (image, _) in
             completion(image)
+        }
+    }
+    
+    private func getTargetSize() -> CGSize {
+        switch Config.cameraPreset {
+        case .low:
+            return .init(width: 1280, height: 720)
+            
+        case .medium:
+            return .init(width: 1920, height: 1080)
+            
+        case .high:
+            return .init(width: 3840, height: 2160)
+            
+        case.original:
+            return .init(width: asset.pixelWidth, height: asset.pixelHeight)
         }
     }
     
@@ -39,7 +54,6 @@ extension Image {
     ///
     /// - Parameters:
     ///   - images: The array of Image
-    ///   - size: The target size for all images
     ///   - completion: Called when operations completion
     public static func resolve(images: [Image], completion: @escaping ([UIImage?]) -> Void) {
         let dispatchGroup = DispatchGroup()

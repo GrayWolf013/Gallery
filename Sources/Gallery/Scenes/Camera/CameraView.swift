@@ -8,8 +8,11 @@ protocol CameraViewDelegate: class {
 class CameraView: UIView, UIGestureRecognizerDelegate {
 	
 	lazy var closeButton: UIButton = self.makeCloseButton()
-	lazy var flashButton: TripleButton = self.makeFlashButton()
+    lazy var flashButton: TripleButton = self.makeFlashButton()
+    
 	lazy var rotateButton: UIButton = self.makeRotateButton()
+    lazy var galleryButton: UIButton = self.makeGalleryButton()
+    
 	lazy var bottomContainer: UIView = self.makeBottomContainer()
 	lazy var bottomView: UIView = self.makeBottomView()
 	lazy var stackView: StackView = self.makeStackView()
@@ -20,7 +23,8 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
 	lazy var rotateOverlayView: UIView = self.makeRotateOverlayView()
 	lazy var shutterOverlayView: UIView = self.makeShutterOverlayView()
 	lazy var blurView: UIVisualEffectView = self.makeBlurView()
-	
+    lazy var maxToastView: UIView = self.makeMaxSizeToast()
+
 	var timer: Timer?
 	var previewLayer: AVCaptureVideoPreviewLayer?
 	
@@ -42,12 +46,12 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
 	
 	func setup() {
 		addGestureRecognizer(tapGR)
-		
-		[closeButton, flashButton, rotateButton, bottomContainer].forEach {
+        
+		[closeButton, flashButton, galleryButton, shutterButton, rotateButton, bottomContainer, maxToastView].forEach {
 			addSubview($0)
 		}
 		
-		[bottomView, shutterButton].forEach {
+		[bottomView].forEach {
 			bottomContainer.addSubview($0)
 		}
 		
@@ -55,7 +59,7 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
 			bottomView.addSubview($0)
 		}
 		
-		[closeButton, flashButton, rotateButton].forEach {
+		[closeButton, flashButton, rotateButton, galleryButton].forEach {
 			$0.g_addShadow()
 		}
 		
@@ -68,23 +72,25 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
 		closeButton.g_pin(size: CGSize(width: 44, height: 44))
 		
 		flashButton.g_pin(on: .centerY, view: closeButton)
-		flashButton.g_pin(on: .centerX)
+        flashButton.g_pin(on: .right)
 		flashButton.g_pin(size: CGSize(width: 60, height: 44))
 		
-		rotateButton.g_pin(on: .right)
-		rotateButton.g_pin(size: CGSize(width: 44, height: 44))
-		
-		if #available(iOS 11, *) {
-			Constraint.on(
-				closeButton.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor),
-				rotateButton.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor)
-			)
-		} else {
-			Constraint.on(
-				closeButton.topAnchor.constraint(equalTo: topAnchor),
-				rotateButton.topAnchor.constraint(equalTo: topAnchor)
-			)
-		}
+        shutterButton.translatesAutoresizingMaskIntoConstraints = false
+        shutterButton.bottomAnchor.constraint(equalTo: bottomView.topAnchor, constant: -32).isActive = true
+        shutterButton.g_pin(on: .centerX)
+        shutterButton.g_pin(size: CGSize(width: 70, height: 70))
+        
+        rotateButton.g_pin(on: .right, constant: -32)
+		rotateButton.g_pin(size: CGSize(width: 52, height: 52))
+        rotateButton.g_pin(on: .centerY, view: shutterButton)
+        
+        galleryButton.g_pin(on: .left, constant: 32)
+        galleryButton.g_pin(size: CGSize(width: 52, height: 52))
+        galleryButton.g_pin(on: .centerY, view: shutterButton)
+        
+        Constraint.on(
+            closeButton.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor)
+        )
 		
 		bottomContainer.g_pinDownward()
 		bottomContainer.g_pin(height: 80)
@@ -94,16 +100,25 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
 		stackView.g_pin(on: .left, constant: 38)
 		stackView.g_pin(size: CGSize(width: 56, height: 56))
 		
-		shutterButton.g_pinCenter()
-		shutterButton.g_pin(size: CGSize(width: 60, height: 60))
-		
 		doneButton.g_pin(on: .centerY)
 		doneButton.g_pin(on: .right, constant: -38)
 		
 		rotateOverlayView.g_pinEdges()
 		blurView.g_pinEdges()
 		shutterOverlayView.g_pinEdges()
+        
+        maxToastView.g_pin(on: .centerX)
+        maxToastView.g_pin(on: .bottom, view: bottomView, on: .top, constant: -8)
 	}
+    
+    func handleToast(_ isHidden: Bool) {
+        UIView.animate(withDuration: 0.3) { [weak self] in
+            self?.maxToastView.alpha = isHidden ? 0 : 1
+            self?.shutterButton.alpha = isHidden ? 1 : 0
+            self?.closeButton.alpha = isHidden ? 1 : 0
+            self?.doneButton.alpha = isHidden ? 1 : 0
+        }
+    }
 	
 	func setupPreviewLayer(_ session: AVCaptureSession) {
 		guard previewLayer == nil else { return }
@@ -173,9 +188,12 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
 	}
 	
 	func makeFlashButton() -> TripleButton {
+        let offImage = Config.Camera.FlashButton.offImage ?? GalleryBundle.image("gallery_camera_flash_off")!
+        let onImage = Config.Camera.FlashButton.onImage ?? GalleryBundle.image("gallery_camera_flash_on")!
+        
 		let states: [TripleButton.ButtonState] = [
-			TripleButton.ButtonState(title: "Gallery.Camera.Flash.Off".g_localize(fallback: "OFF"), image: GalleryBundle.image("gallery_camera_flash_off")!),
-			TripleButton.ButtonState(title: "Gallery.Camera.Flash.On".g_localize(fallback: "ON"), image: GalleryBundle.image("gallery_camera_flash_on")!),
+			TripleButton.ButtonState(title: "", image: offImage),
+			TripleButton.ButtonState(title: "", image: onImage),
 			TripleButton.ButtonState(title: "Gallery.Camera.Flash.Auto".g_localize(fallback: "AUTO"), image: GalleryBundle.image("gallery_camera_flash_auto")!)
 		]
 		
@@ -186,10 +204,24 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
 	
 	func makeRotateButton() -> UIButton {
 		let button = UIButton(type: .custom)
-		button.setImage(GalleryBundle.image("gallery_camera_rotate"), for: UIControl.State())
+        if let image = Config.Camera.RotateButton.image {
+            button.setImage(image, for: UIControl.State())
+        } else {
+            button.setImage(GalleryBundle.image("gallery_camera_rotate"), for: UIControl.State())
+        }
 		
 		return button
 	}
+    
+    func makeGalleryButton() -> UIButton {
+        let button = UIButton()
+        if let image = Config.Camera.GalleryButton.image {
+            button.setImage(image, for: UIControl.State())
+        } else {
+            button.setTitle("gallery", for: .normal)
+        }
+        return button
+    }
 	
 	func makeBottomContainer() -> UIView {
 		let view = UIView()
@@ -217,6 +249,34 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
 		
 		return button
 	}
+    
+    private func makeMaxSizeToast() -> UIView {
+        let view = UIView()
+        view.backgroundColor = UIColor.black.withAlphaComponent(0.85)
+        view.layer.cornerRadius = 12
+        
+        let label = UILabel()
+        label.text = Config.Toast.maxImageSizeText
+        label.textColor = .white
+        label.font = Config.Toast.toastFont
+        
+        let infoImage = UIImageView()
+        infoImage.image = Config.Toast.infoImage
+        infoImage.tintColor = .white
+        infoImage.g_pin(height: 16)
+        infoImage.g_pin(width: 16)
+        
+        let stack = UIStackView.init(arrangedSubviews: [infoImage, label])
+        stack.axis = .horizontal
+        stack.spacing = 16
+        stack.alignment = .center
+        
+        view.addSubview(stack)
+        stack.g_pinEdges(insets: .init(top: 12, left: 8, bottom: -12, right: -8))
+        
+        view.alpha = 0
+        return view
+    }
 	
 	func makeDoneButton() -> UIButton {
 		let button = UIButton(type: .system)

@@ -15,6 +15,7 @@ class GridView: UIView {
     lazy var emptyView: UIView = self.makeEmptyView()
     lazy var loadingIndicator: UIActivityIndicatorView = self.makeLoadingIndicator()
     lazy var progressLabel: UILabel = self.makeProgressLabel()
+    lazy var maxToastView: UIView = self.makeMaxSizeToast()
 
     // MARK: - Initialization
     
@@ -32,7 +33,7 @@ class GridView: UIView {
     // MARK: - Setup
     
     private func setup() {
-        [collectionView, bottomView, topView, emptyView, loadingIndicator].forEach {
+        [collectionView, bottomView, topView, emptyView, loadingIndicator, maxToastView].forEach {
             addSubview($0)
         }
         
@@ -77,6 +78,17 @@ class GridView: UIView {
         
         progressLabel.g_pin(on: .centerX)
         progressLabel.g_pin(on: .centerY)
+
+        maxToastView.g_pin(on: .centerX)
+        maxToastView.g_pin(on: .bottom, view: bottomView, on: .top, constant: -8)
+    }
+    
+    func handleToast(_ isHidden: Bool) {
+        UIView.animate(withDuration: 0.3) { [weak self] in
+            self?.maxToastView.alpha = isHidden ? 0 : 1
+            self?.closeButton.alpha = isHidden ? 1 : 0
+            self?.doneButton.alpha = isHidden ? 1 : 0
+        }
     }
     
     // MARK: - Controls
@@ -125,8 +137,35 @@ class GridView: UIView {
         return button
     }
     
+    private func makeMaxSizeToast() -> UIView {
+        let view = UIView()
+        view.backgroundColor = UIColor.black.withAlphaComponent(0.85)
+        view.layer.cornerRadius = 12
+        
+        let label = UILabel()
+        label.text = Config.Toast.maxImageSizeText
+        label.textColor = .white
+        label.font = Config.Toast.toastFont
+        
+        let infoImage = UIImageView()
+        infoImage.image = Config.Toast.infoImage
+        infoImage.tintColor = .white
+        infoImage.g_pin(height: 16)
+        infoImage.g_pin(width: 16)
+        
+        let stack = UIStackView.init(arrangedSubviews: [infoImage, label])
+        stack.axis = .horizontal
+        stack.spacing = 16
+        stack.alignment = .center
+        
+        view.addSubview(stack)
+        stack.g_pinEdges(insets: .init(top: 12, left: 8, bottom: -12, right: -8))
+        
+        view.alpha = 0
+        return view
+    }
     
-    private func makeProgressLabel() -> UILabel{
+    private func makeProgressLabel() -> UILabel {
         let label = UILabel()
         label.text = "1/5 Items Selected"
         label.textColor = .white
