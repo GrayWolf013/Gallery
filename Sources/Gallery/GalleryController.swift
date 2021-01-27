@@ -180,6 +180,10 @@ open class GalleryController: UIViewController {
             self?.pagesController?.scroll(to: .imageTab)
         }
         
+        EventHub.shared.requestScrollToCamera = { [weak self] _ in
+            self?.pagesController?.scroll(to: .cameraTab)
+        }
+        
         EventHub.shared.imageSize = { [weak self] imageSize in
             let isMaxReached = imageSize > Config.Toast.maxImagesSize
             print("isMaxReached: \(isMaxReached)")

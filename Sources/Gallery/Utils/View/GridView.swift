@@ -11,6 +11,7 @@ class GridView: UIView {
     lazy var arrowButton: ArrowButton = self.makeArrowButton()
     lazy var collectionView: UICollectionView = self.makeCollectionView()
     lazy var closeButton: UIButton = self.makeCloseButton()
+    lazy var cameraButton: UIButton = self.makeCameraButton()
     lazy var doneButton: UIButton = self.makeDoneButton()
     lazy var emptyView: UIView = self.makeEmptyView()
     lazy var loadingIndicator: UIActivityIndicatorView = self.makeLoadingIndicator()
@@ -37,7 +38,7 @@ class GridView: UIView {
             addSubview($0)
         }
         
-        [closeButton, arrowButton].forEach {
+        [closeButton, arrowButton, cameraButton].forEach {
             topView.addSubview($0)
         }
         
@@ -69,6 +70,10 @@ class GridView: UIView {
         closeButton.g_pin(on: .left)
         closeButton.g_pin(size: CGSize(width: 48, height: 48))
         
+        cameraButton.g_pin(on: .top)
+        cameraButton.g_pin(on: .right)
+        cameraButton.g_pin(size: CGSize(width: 48, height: 48))
+
         arrowButton.g_pin(on: .centerX)
         arrowButton.g_pin(on: .top)
         arrowButton.g_pin(height: 48)
@@ -123,6 +128,14 @@ class GridView: UIView {
         let button = UIButton(type: .custom)
         button.setImage(GalleryBundle.image("gallery_close")?.withRenderingMode(.alwaysTemplate), for: UIControl.State())
         button.tintColor = Config.Grid.CloseButton.tintColor
+        
+        return button
+    }
+    
+    private func makeCameraButton() -> UIButton {
+        let button = UIButton(type: .custom)
+        button.setImage(Config.Grid.CameraButton.image?.withRenderingMode(.alwaysTemplate), for: UIControl.State())
+        button.tintColor = Config.Grid.CameraButton.tintColor
         
         return button
     }

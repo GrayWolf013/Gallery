@@ -73,6 +73,7 @@ class ImagesController: UIViewController {
 		gridView.closeButton.addTarget(self, action: #selector(closeButtonTouched(_:)), for: .touchUpInside)
 		gridView.doneButton.addTarget(self, action: #selector(doneButtonTouched(_:)), for: .touchUpInside)
 		gridView.arrowButton.addTarget(self, action: #selector(arrowButtonTouched(_:)), for: .touchUpInside)
+        gridView.cameraButton.addTarget(self, action: #selector(cameraButtonTouched(_:)), for: .touchUpInside)
 		stackView.addTarget(self, action: #selector(stackViewTouched(_:)), for: .touchUpInside)
 		
 		gridView.collectionView.dataSource = self
@@ -97,6 +98,10 @@ class ImagesController: UIViewController {
 		dropdownController.toggle()
 		button.toggle(dropdownController.expanding)
 	}
+    
+    @objc func cameraButtonTouched(_ button: ArrowButton) {
+        EventHub.shared.requestScrollToCamera?(())
+    }
 	
 	@objc func stackViewTouched(_ stackView: StackView) {
 		EventHub.shared.stackViewTouched?(())

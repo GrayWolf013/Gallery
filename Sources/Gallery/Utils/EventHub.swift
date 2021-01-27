@@ -16,6 +16,7 @@ class EventHub {
     var stackViewTouched: Action<Void>?
     var previewImage: Action<Image>?
     var requestScrollToGallery: Action<Void>?
+    var requestScrollToCamera: Action<Void>?
     var imageCaptured: Action<Void>?
     var imageSize: Action<Double>?
 }
