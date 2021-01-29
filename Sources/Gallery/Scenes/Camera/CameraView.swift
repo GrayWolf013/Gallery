@@ -138,8 +138,13 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
         UIView.animate(withDuration: 0.3) { [weak self] in
             self?.toastView.alpha = shouldShow ? 0 : 1
             self?.shutterButton.alpha = shouldShow ? 1 : 0
-            self?.closeButton.alpha = shouldShow ? 1 : 0
-            self?.doneButton.alpha = shouldShow ? 1 : 0
+            if isMaxSize {
+                self?.closeButton.alpha = isHidden ? 1 : 0
+                self?.doneButton.alpha = isHidden ? 1 : 0
+            } else {
+                self?.closeButton.alpha = 1
+                self?.doneButton.alpha = 1
+            }
         }
     }
 	
