@@ -21,7 +21,6 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
     }
     
     // MARK: - CLLocationManagerDelegate
-    
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         // Pick the location with best (= smallest value) horizontal accuracy
         latestLocation = locations.sorted { $0.horizontalAccuracy < $1.horizontalAccuracy }.first

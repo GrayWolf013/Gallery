@@ -30,6 +30,7 @@ public struct Config {
         public static var maxImagesSize: Double = 8.9
         public static var infoImage: UIImage? = nil
         public static var maxImageSizeText: String = "The attachement size exceeds the 9 MB limit."
+        public static var maxLimitText: String = "The 5 images limit has been reached."
     }
     
 	

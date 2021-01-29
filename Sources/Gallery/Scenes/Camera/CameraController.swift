@@ -53,9 +53,8 @@ class CameraController: UIViewController {
 	}
 	
 	// MARK: - Setup
-    
-    func handleToast(_ isHidden: Bool) {
-        cameraView.handleToast(isHidden)
+    func handleToast(_ isHidden: Bool, isMaxSize: Bool) {
+        cameraView.handleToast(isHidden, isMaxSize: isMaxSize)
     }
     
     func configurePreset() {
@@ -153,7 +152,9 @@ class CameraController: UIViewController {
 	// MARK: - View
 	func refreshView() {
 		let hasImages = !cart.images.isEmpty
-		cameraView.bottomView.g_fade(visible: hasImages)
+        let imageLimitReached = self.cart.images.count >= Config.Camera.imageLimit
+        cameraView.bottomView.g_fade(visible: hasImages)
+        handleToast(!imageLimitReached, isMaxSize: false)
 	}
 	
 	// MARK: - Controls
@@ -220,5 +221,4 @@ extension CameraController: CameraManDelegate {
 	func cameraMan(_ cameraMan: CameraMan, didChangeInput input: AVCaptureDeviceInput) {
 		cameraView.flashButton.isHidden = !input.device.hasFlash
 	}
-	
 }

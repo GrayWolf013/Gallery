@@ -188,7 +188,7 @@ open class GalleryController: UIViewController {
             let isMaxReached = imageSize > Config.Toast.maxImagesSize
             print("isMaxReached: \(isMaxReached)")
             self?.imagesController?.handleToast(!isMaxReached)
-            self?.cameraController?.handleToast(!isMaxReached)
+            self?.cameraController?.handleToast(!isMaxReached, isMaxSize: true)
         }
 	}
 }

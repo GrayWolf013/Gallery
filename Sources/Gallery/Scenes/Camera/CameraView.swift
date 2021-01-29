@@ -23,11 +23,15 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
 	lazy var rotateOverlayView: UIView = self.makeRotateOverlayView()
 	lazy var shutterOverlayView: UIView = self.makeShutterOverlayView()
 	lazy var blurView: UIVisualEffectView = self.makeBlurView()
-    lazy var maxToastView: UIView = self.makeMaxSizeToast()
-
+    lazy var toastView: UIView = self.makeToastView()
+    
 	var timer: Timer?
 	var previewLayer: AVCaptureVideoPreviewLayer?
-	
+    
+    private let toastLabel = UILabel()
+    private var isMaxLimit = false
+    private var isMaxSize = false
+
 	weak var delegate: CameraViewDelegate?
 	
 	// MARK: - Initialization
@@ -47,7 +51,7 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
 	func setup() {
 		addGestureRecognizer(tapGR)
         
-		[closeButton, flashButton, galleryButton, shutterButton, rotateButton, bottomContainer, maxToastView].forEach {
+		[closeButton, flashButton, galleryButton, shutterButton, rotateButton, bottomContainer, toastView].forEach {
 			addSubview($0)
 		}
 		
@@ -107,16 +111,35 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
 		blurView.g_pinEdges()
 		shutterOverlayView.g_pinEdges()
         
-        maxToastView.g_pin(on: .centerX)
-        maxToastView.g_pin(on: .bottom, view: bottomView, on: .top, constant: -8)
+        toastView.g_pin(on: .centerX)
+        toastView.g_pin(on: .bottom, view: bottomView, on: .top, constant: -8)
 	}
     
-    func handleToast(_ isHidden: Bool) {
+    func handleToast(_ isHidden: Bool, isMaxSize: Bool) {
+        
+        if isMaxSize {
+            if isHidden {
+                self.isMaxSize = false
+            } else {
+                self.isMaxSize = true
+                toastLabel.text = Config.Toast.maxImageSizeText
+            }
+        } else {
+            if isHidden {
+                self.isMaxLimit = false
+            } else {
+                self.isMaxLimit = true
+                toastLabel.text = Config.Toast.maxLimitText
+            }
+        }
+        
+        let shouldShow = !(self.isMaxLimit || self.isMaxSize)
+        
         UIView.animate(withDuration: 0.3) { [weak self] in
-            self?.maxToastView.alpha = isHidden ? 0 : 1
-            self?.shutterButton.alpha = isHidden ? 1 : 0
-            self?.closeButton.alpha = isHidden ? 1 : 0
-            self?.doneButton.alpha = isHidden ? 1 : 0
+            self?.toastView.alpha = shouldShow ? 0 : 1
+            self?.shutterButton.alpha = shouldShow ? 1 : 0
+            self?.closeButton.alpha = shouldShow ? 1 : 0
+            self?.doneButton.alpha = shouldShow ? 1 : 0
         }
     }
 	
@@ -250,15 +273,14 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
 		return button
 	}
     
-    private func makeMaxSizeToast() -> UIView {
+    private func makeToastView() -> UIView {
         let view = UIView()
         view.backgroundColor = UIColor.black.withAlphaComponent(0.85)
         view.layer.cornerRadius = 12
         
-        let label = UILabel()
-        label.text = Config.Toast.maxImageSizeText
-        label.textColor = .white
-        label.font = Config.Toast.toastFont
+        toastLabel.text = Config.Toast.maxImageSizeText
+        toastLabel.textColor = .white
+        toastLabel.font = Config.Toast.toastFont
         
         let infoImage = UIImageView()
         infoImage.image = Config.Toast.infoImage
@@ -266,7 +288,7 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
         infoImage.g_pin(height: 16)
         infoImage.g_pin(width: 16)
         
-        let stack = UIStackView.init(arrangedSubviews: [infoImage, label])
+        let stack = UIStackView.init(arrangedSubviews: [infoImage, toastLabel])
         stack.axis = .horizontal
         stack.spacing = 16
         stack.alignment = .center
