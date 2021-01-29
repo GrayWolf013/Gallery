@@ -254,7 +254,8 @@ extension ImagesController: UICollectionViewDataSource, UICollectionViewDelegate
 		if isMultipleSelectionModeActive {
 			handleSelect(item)
 		} else {
-            EventHub.shared.previewImage?(item)
+            cart.add(item)
+            EventHub.shared.doneWithImages?(())
 		}
 	}
     
