@@ -3,7 +3,6 @@ import AVFoundation
 
 class CameraController: UIViewController {
 	
-	var locationManager: LocationManager?
 	lazy var cameraMan: CameraMan = self.makeCameraMan()
 	lazy var cameraView: CameraView = self.makeCameraView()
 	let once = Once()
@@ -26,19 +25,6 @@ class CameraController: UIViewController {
 		super.viewDidLoad()
 		
 		setup()
-		setupLocation()
-	}
-	
-	override func viewWillAppear(_ animated: Bool) {
-		super.viewWillAppear(animated)
-		
-		locationManager?.start()
-	}
-	
-	override func viewWillDisappear(_ animated: Bool) {
-		super.viewWillDisappear(animated)
-		
-		locationManager?.stop()
 	}
 	
 	override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -72,12 +58,6 @@ class CameraController: UIViewController {
 		cameraView.shutterButton.addTarget(self, action: #selector(shutterButtonTouched(_:)), for: .touchUpInside)
 		cameraView.doneButton.addTarget(self, action: #selector(doneButtonTouched(_:)), for: .touchUpInside)
         cameraView.galleryButton.addTarget(self, action: #selector(galleryButtonTouched(_:)), for: .touchUpInside)
-	}
-	
-	func setupLocation() {
-		if Config.Camera.recordLocation {
-			locationManager = LocationManager()
-		}
 	}
 	
 	// MARK: - Action
@@ -127,14 +107,13 @@ class CameraController: UIViewController {
 		})
 		
 		self.cameraView.stackView.startLoading()
-		cameraMan.takePhoto(previewLayer, location: locationManager?.latestLocation) { [weak self] asset in
-			guard let self = self else { return }
+		cameraMan.takePhoto(previewLayer) { [weak self] asset in
             DispatchQueue.main.async {
                 button.isEnabled = true
-                self.cameraView.stackView.stopLoading()
+                self?.cameraView.stackView.stopLoading()
                 
                 if let asset = asset {
-                    self.cart.add(Image(asset: asset), newlyTaken: true)
+                    self?.cart.add(Image(asset: asset), newlyTaken: true)
                     EventHub.shared.imageCaptured?(())
                 }
             }

@@ -22,7 +22,6 @@ class CameraMan: NSObject {
     var photoOutput: AVCapturePhotoOutput?
         
     private var captureImageCompletion: ((PHAsset?) -> Void)?
-    private var captureImageLocation: CLLocation?
     private var flashMode: AVCaptureDevice.FlashMode = .off
     
 	deinit {
@@ -134,9 +133,8 @@ class CameraMan: NSObject {
 		}
 	}
 	
-	func takePhoto(_ previewLayer: AVCaptureVideoPreviewLayer, location: CLLocation?, completion: @escaping ((PHAsset?) -> Void)) {
+	func takePhoto(_ previewLayer: AVCaptureVideoPreviewLayer, completion: @escaping ((PHAsset?) -> Void)) {
         self.captureImageCompletion = completion
-        self.captureImageLocation = location
         
         let settings = AVCapturePhotoSettings()
         photoOutput?.capturePhoto(with: settings, delegate: self)
@@ -152,7 +150,6 @@ class CameraMan: NSObject {
 					localIdentifier = request.placeholderForCreatedAsset?.localIdentifier
 					
 					request.creationDate = Date()
-                    request.location = self?.captureImageLocation
 				}
                 if let localIdentifier = localIdentifier {
                     self?.captureImageCompletion?(Fetcher.fetchAsset(localIdentifier))
@@ -247,6 +244,5 @@ extension CameraMan: AVCapturePhotoCaptureDelegate {
     
     private func reset() {
         self.captureImageCompletion = nil
-        self.captureImageLocation = nil
     }
 }

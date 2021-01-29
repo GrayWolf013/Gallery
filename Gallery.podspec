@@ -16,6 +16,6 @@ Pod::Spec.new do |s|
   s.requires_arc = true
   s.source_files = 'Sources/**/*'
   s.resource = 'Sources/Gallery/Resources/Gallery.bundle'
-  s.frameworks = 'UIKit', 'Foundation', 'AVFoundation', 'Photos', 'PhotosUI', 'CoreLocation', 'AVKit'
+  s.frameworks = 'UIKit', 'Foundation', 'AVFoundation', 'Photos', 'PhotosUI', 'AVKit'
   s.swift_version = '5.0'
 end
