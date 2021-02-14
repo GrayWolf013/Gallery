@@ -137,6 +137,7 @@ class CameraMan: NSObject {
         self.captureImageCompletion = completion
         
         let settings = AVCapturePhotoSettings()
+        settings.flashMode = flashMode
         photoOutput?.capturePhoto(with: settings, delegate: self)
 	}
 	

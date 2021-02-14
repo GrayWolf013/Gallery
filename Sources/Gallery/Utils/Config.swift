@@ -32,7 +32,6 @@ public struct Config {
         public static var maxImageSizeText: String = "The attachement size exceeds the 9 MB limit."
         public static var maxLimitText: String = "You can only add up to 5 images."
     }
-    
 	
 	public struct PageIndicator {
         public static var isVisible: Bool = false
