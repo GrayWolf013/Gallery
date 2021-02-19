@@ -6,7 +6,8 @@ class ImagesController: UIViewController {
 	lazy var dropdownController: DropdownController = self.makeDropdownController()
 	lazy var gridView: GridView = self.makeGridView()
 	lazy var stackView: StackView = self.makeStackView()
-	
+    private let generator = UIImpactFeedbackGenerator(style: .medium)
+    
 	var items: [Image] = []
 	let library = ImagesLibrary()
 	var selectedAlbum: Album?
@@ -272,17 +273,28 @@ extension ImagesController: UICollectionViewDataSource, UICollectionViewDelegate
     }
 	
 	@objc func handleLongPress(gesture: UILongPressGestureRecognizer) {
-		guard gesture.state != .ended else { return }
-		
-		let collectionView = gridView.collectionView
-		let location = gesture.location(in: collectionView)
-		
-		if let indexPath = collectionView.indexPathForItem(at: location) {
-			let item = items[(indexPath as NSIndexPath).item]
-			handleSelect(item)
-		} else {
-			print("No index found at gesture location")
-		}
+        
+        switch gesture.state {
+        case .began:
+            gridView.collectionView.allowsSelection = false
+            
+            generator.impactOccurred()
+            
+            let collectionView = gridView.collectionView
+            let location = gesture.location(in: collectionView)
+            
+            if let indexPath = collectionView.indexPathForItem(at: location) {
+                let item = items[(indexPath as NSIndexPath).item]
+                handleSelect(item)
+            } else {
+                print("No index found at gesture location")
+            }
+            
+        case .ended:
+            gridView.collectionView.allowsSelection = true
+            
+        default: break
+        }
 	}
 	
 	func configureFrameViews() {

@@ -36,10 +36,6 @@ class CameraMan: NSObject {
 			self.delegate?.cameraManNotAvailable(self)
 		}
 	}
-    
-    func configurePreset() {
-        configurePreset(device: currentInput?.device)
-    }
 	
 	func setupDevices() {
 		// Input
@@ -63,9 +59,7 @@ class CameraMan: NSObject {
         photoOutput?.setPreparedPhotoSettingsArray([AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.jpeg])])
 	}
 	
-	func addInput(_ input: AVCaptureDeviceInput) {
-        configurePreset(device: input.device)
-		
+	func addInput(_ input: AVCaptureDeviceInput) {		
 		if session.canAddInput(input) {
 			session.addInput(input)
 			
@@ -194,36 +188,6 @@ class CameraMan: NSObject {
 		block()
 		session.commitConfiguration()
 	}
-	
-	// MARK: - Preset
-    func configurePreset(device: AVCaptureDevice?) {
-        guard let device = device else { return }
-        switch Config.cameraPreset {
-        case .low:
-            if device.supportsSessionPreset(.low),
-               session.canSetSessionPreset(.low) {
-                self.session.sessionPreset = .low
-            }
-            
-        case .medium:
-            if device.supportsSessionPreset(.medium),
-               session.canSetSessionPreset(.medium) {
-                self.session.sessionPreset = .medium
-            }
-            
-        case .high:
-            if device.supportsSessionPreset(.high),
-               session.canSetSessionPreset(.high) {
-                self.session.sessionPreset = .high
-            }
-            
-        case.original:
-            if device.supportsSessionPreset(.photo),
-               session.canSetSessionPreset(.photo) {
-                self.session.sessionPreset = .photo
-            }
-        }
-    }
 }
 
 

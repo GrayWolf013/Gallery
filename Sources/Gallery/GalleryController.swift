@@ -66,10 +66,6 @@ open class GalleryController: UIViewController {
         cameraController?.cameraMan
     }
     
-    public func configurePreset() {
-        cameraController?.configurePreset()
-    }
-    
     public func present(tab: Config.GalleryTab) {
         pagesController?.scroll(to: tab)
     }
