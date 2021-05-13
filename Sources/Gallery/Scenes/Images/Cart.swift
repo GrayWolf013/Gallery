@@ -15,13 +15,10 @@ public class Cart {
     public var currentSize: Double = .zero
     private var byteCountFormatter = ByteCountFormatter()
 
+    private var temporaryImages: [Image] = []
+    private var temporaryVideo: Video?
+
     var delegates: NSHashTable<AnyObject> = NSHashTable.weakObjects()
-    
-    // MARK: - Initialization
-    
-    init() {
-        
-    }
     
     // MARK: - Delegate
     
@@ -30,6 +27,16 @@ public class Cart {
     }
     
     // MARK: - Logic
+    
+    public func setInitialImages() {
+        temporaryVideo = video
+        temporaryImages = images
+    }
+    
+    public func resetInitialImages() {
+        images = temporaryImages
+        video = temporaryVideo
+    }
     
     public func add(_ image: Image, newlyTaken: Bool = false) {
         guard !images.contains(image) else { return }

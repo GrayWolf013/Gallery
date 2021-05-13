@@ -53,6 +53,10 @@ open class GalleryController: UIViewController {
 	}
     
     // MARK: - Public func
+    public func setInitialImages() {
+        cart.setInitialImages()
+    }
+    
     public func handleSelect(_ image: Image) {
         imagesController?.handleSelect(image)
     }
@@ -138,6 +142,7 @@ open class GalleryController: UIViewController {
 	func setup() {
 		EventHub.shared.close = {[weak self] _ in
 			if let self = self {
+                self.cart.resetInitialImages()
                 self.delegate?.galleryControllerDidCancel(self)
 			}
 		}
