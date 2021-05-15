@@ -65,9 +65,6 @@ open class GalleryController: UIViewController {
         self.shouldHideElement = isHidden
         cameraController?.cameraView.closeButton.isHidden = isHidden
         imagesController?.gridView.closeButton.isHidden = isHidden
-        
-        
-        cameraController?.cameraMan
     }
     
     public func present(tab: Config.GalleryTab) {

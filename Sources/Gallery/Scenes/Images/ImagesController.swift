@@ -36,6 +36,11 @@ class ImagesController: UIViewController {
 		
 		setup()
 	}
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        gridView.collectionView.reloadData()
+    }
 	
 	override func viewWillLayoutSubviews() {
 		super.viewWillLayoutSubviews()

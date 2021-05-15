@@ -190,10 +190,9 @@ class GridView: UIView {
         layout.minimumInteritemSpacing = 2
         layout.minimumLineSpacing = 2
         
-        let view = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        view.backgroundColor = UIColor.backgroundColor
-        
-        return view
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.backgroundColor = UIColor.backgroundColor
+        return collectionView
     }
     
     private func makeEmptyView() -> EmptyView {
