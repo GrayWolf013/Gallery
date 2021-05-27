@@ -67,6 +67,10 @@ open class GalleryController: UIViewController {
         imagesController?.gridView.closeButton.isHidden = isHidden
     }
     
+    public func configurePreset() {
+        cameraController?.configurePreset()
+    }
+    
     public func present(tab: Config.GalleryTab) {
         pagesController?.scroll(to: tab)
     }

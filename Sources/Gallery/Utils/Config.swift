@@ -15,6 +15,15 @@ public struct Config {
 		case cameraTab
 		case videoTab
 	}
+    
+    public enum CameraPreset: String {
+        case low = "Low"
+        case medium = "Medium"
+        case high = "High"
+        case original = "Original"
+    }
+    
+    public static var cameraPreset: CameraPreset = .medium
 
     public struct Toast {
         public static var toastFont: UIFont = .preferredFont(forTextStyle: .headline)

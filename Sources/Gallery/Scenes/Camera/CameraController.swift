@@ -42,6 +42,10 @@ class CameraController: UIViewController {
     func handleToast(_ isHidden: Bool, isMaxSize: Bool) {
         cameraView.handleToast(isHidden, isMaxSize: isMaxSize)
     }
+    
+    func configurePreset() {
+        cameraMan.configurePreset()
+    }
 	
 	func setup() {
 		view.addSubview(cameraView)

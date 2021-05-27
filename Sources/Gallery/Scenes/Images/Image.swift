@@ -27,10 +27,26 @@ extension Image {
         options.resizeMode = .exact
         PHImageManager.default().requestImage(
             for: asset,
-            targetSize: .init(width: 3840, height: 2160),
+            targetSize: getTargetSize(),
             contentMode: .default,
             options: options) { [weak self] (image, _) in
             completion(image)
+        }
+    }
+    
+    private func getTargetSize() -> CGSize {
+        switch Config.cameraPreset {
+        case .low:
+            return .init(width: 1280, height: 720)
+            
+        case .medium:
+            return .init(width: 1920, height: 1080)
+            
+        case .high:
+            return .init(width: 3840, height: 2160)
+            
+        case.original:
+            return .init(width: asset.pixelWidth, height: asset.pixelHeight)
         }
     }
     
