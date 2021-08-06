@@ -14,10 +14,6 @@ class ImagesController: UIViewController {
 	let once = Once()
 	let cart: Cart
 	
-    private var isMultipleSelectionModeActive: Bool {
-        return !cart.images.isEmpty
-    }
-	
 	// MARK: - Init
 	public required init(cart: Cart) {
 		self.cart = cart
@@ -257,12 +253,7 @@ extension ImagesController: UICollectionViewDataSource, UICollectionViewDelegate
 	func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
 		let item = items[(indexPath as NSIndexPath).item]
 		
-		if isMultipleSelectionModeActive {
-			handleSelect(item)
-		} else {
-            cart.add(item)
-            EventHub.shared.doneWithImages?(())
-		}
+		handleSelect(item)
 	}
     
     func handleSelect(_ image: Image) {
