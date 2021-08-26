@@ -81,7 +81,7 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
 		flashButton.g_pin(size: CGSize(width: 60, height: 44))
 		
         shutterButton.translatesAutoresizingMaskIntoConstraints = false
-        shutterButton.bottomAnchor.constraint(equalTo: bottomView.topAnchor, constant: -32).isActive = true
+        shutterButton.bottomAnchor.constraint(equalTo: bottomView.topAnchor, constant: -8).isActive = true
         shutterButton.g_pin(on: .centerX)
         shutterButton.g_pin(size: CGSize(width: 70, height: 70))
         
