@@ -72,11 +72,12 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
 		insertSubview(focusImageView, belowSubview: bottomContainer)
 		insertSubview(shutterOverlayView, belowSubview: bottomContainer)
 		
-		closeButton.g_pin(on: .left)
+		closeButton.g_pin(on: .left, constant: 16)
+                closeButton.g_pin(on: .top, constant: 16)
 		closeButton.g_pin(size: CGSize(width: 44, height: 44))
 		
 		flashButton.g_pin(on: .centerY, view: closeButton)
-        flashButton.g_pin(on: .right)
+		flashButton.g_pin(on: .right, constant: -16)
 		flashButton.g_pin(size: CGSize(width: 60, height: 44))
 		
         shutterButton.translatesAutoresizingMaskIntoConstraints = false
