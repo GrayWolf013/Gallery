@@ -42,7 +42,6 @@ public class Cart {
         guard !images.contains(image) else { return }
         
         images.append(image)
-        handleCurrentSize()
 
         for case let delegate as CartDelegate in delegates.allObjects {
             delegate.cart(self, didAdd: image, newlyTaken: newlyTaken)
@@ -53,7 +52,6 @@ public class Cart {
         guard let index = images.firstIndex(of: image) else { return }
         
         images.remove(at: index)
-        handleCurrentSize()
 
         for case let delegate as CartDelegate in delegates.allObjects {
             delegate.cart(self, didRemove: image)
@@ -64,7 +62,6 @@ public class Cart {
         guard let index = images.firstIndex(where: { $0.asset.localIdentifier == imageID }) else { return }
         
         images.remove(at: index)
-        handleCurrentSize()
 
         for case let delegate as CartDelegate in delegates.allObjects {
             delegate.cartDidReload(self)
@@ -73,7 +70,6 @@ public class Cart {
     
     public func reload(_ images: [Image]) {
         self.images = images
-        handleCurrentSize()
         for case let delegate as CartDelegate in delegates.allObjects {
             delegate.cartDidReload(self)
         }
@@ -84,7 +80,6 @@ public class Cart {
     public func clear() {
         video = nil
         images.removeAll()
-        handleCurrentSize()
 
         for case let delegate as CartDelegate in delegates.allObjects {
             delegate.cartDidReload(self)
@@ -95,45 +90,5 @@ public class Cart {
         video = nil
         images.removeAll()
         delegates.removeAllObjects()
-        handleCurrentSize()
-    }
-    
-    private func handleCurrentSize() {
-        resolveImagesData(images) { [weak self] imagesData in
-            guard let self = self else { return }
-            self.currentSize = imagesData.reduce(0) {
-                $0 + (self.getSize(data: $1) ?? .zero)
-            }
-            
-            print("current images size: \(self.currentSize)")
-            EventHub.shared.imageSize?(self.currentSize)
-        }
-    }
-    
-    private func getSize(data: Data?) -> Double {
-        guard let data = data else { return .zero }
-        byteCountFormatter.allowedUnits = [.useMB]
-        byteCountFormatter.countStyle = .file
-        
-        return Double(data.count) / (1024 * 1024)
-    }
-    
-    private func resolveImagesData(_ images: [Image], onCompletion: @escaping ([Data]) -> Void) {
-        var dispatchGroup: DispatchGroup? = DispatchGroup()
-        var resolvedImagesData: [Data] = []
-        
-        images.forEach { current in
-            dispatchGroup?.enter()
-            current.resolve {
-                guard let imageData = $0?.jpegData(compressionQuality: 1) else { return }
-                resolvedImagesData.append(imageData)
-                dispatchGroup?.leave()
-            }
-        }
-        
-        dispatchGroup?.notify(queue: .main) {
-            onCompletion(resolvedImagesData)
-            dispatchGroup = nil
-        }
     }
 }

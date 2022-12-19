@@ -39,8 +39,8 @@ class CameraController: UIViewController {
 	}
 	
 	// MARK: - Setup
-    func handleToast(_ isHidden: Bool, isMaxSize: Bool) {
-        cameraView.handleToast(isHidden, isMaxSize: isMaxSize)
+    func handleToast(_ isHidden: Bool) {
+        cameraView.handleToast(isHidden)
     }
     
     func configurePreset() {
@@ -133,7 +133,7 @@ class CameraController: UIViewController {
 		let hasImages = !cart.images.isEmpty
         let imageLimitReached = self.cart.images.count >= Config.Camera.imageLimit
         cameraView.bottomView.g_fade(visible: hasImages)
-        handleToast(!imageLimitReached, isMaxSize: false)
+        handleToast(!imageLimitReached)
 	}
 	
 	// MARK: - Controls

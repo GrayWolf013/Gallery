@@ -30,7 +30,6 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
     
     private let toastLabel = UILabel()
     private var isMaxLimit = false
-    private var isMaxSize = false
 
 	weak var delegate: CameraViewDelegate?
 	
@@ -116,37 +115,15 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
         toastView.g_pin(on: .bottom, view: bottomView, on: .top, constant: -8)
 	}
     
-    func handleToast(_ isHidden: Bool, isMaxSize: Bool) {
+    func handleToast(_ isHidden: Bool) {
         
-        if isMaxSize {
-            if isHidden {
-                self.isMaxSize = false
-            } else {
-                self.isMaxSize = true
-                toastLabel.text = Config.Toast.maxImageSizeText
-            }
-        } else {
-            if isHidden {
-                self.isMaxLimit = false
-            } else {
-                self.isMaxLimit = true
-                toastLabel.text = Config.Toast.maxLimitText
-            }
-        }
-        
-        let shouldShow = !(self.isMaxLimit || self.isMaxSize)
+        let shouldShow = !self.isMaxLimit
         
         UIView.animate(withDuration: 0.3) { [weak self] in
             self?.toastView.alpha = shouldShow ? 0 : 1
             self?.shutterButton.alpha = shouldShow ? 1 : 0
-            if isMaxSize {
-                self?.closeButton.alpha = isHidden ? 1 : 0
-                self?.doneButton.alpha = isHidden ? 1 : 0
-            } else {
-                self?.closeButton.alpha = 1
-                self?.doneButton.alpha = 1
-            }
-        }
+            self?.closeButton.alpha = 1
+            self?.doneButton.alpha = 1        }
     }
 	
 	func setupPreviewLayer(_ session: AVCaptureSession) {
@@ -284,7 +261,7 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
         view.backgroundColor = UIColor.black.withAlphaComponent(0.85)
         view.layer.cornerRadius = 12
         
-        toastLabel.text = Config.Toast.maxImageSizeText
+        toastLabel.text = Config.Toast.maxLimitText
         toastLabel.textColor = .white
         toastLabel.font = Config.Toast.toastFont
         

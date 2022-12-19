@@ -18,5 +18,4 @@ class EventHub {
     var requestScrollToGallery: Action<Void>?
     var requestScrollToCamera: Action<Void>?
     var imageCaptured: Action<Void>?
-    var imageSize: Action<Double>?
 }

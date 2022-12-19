@@ -16,7 +16,7 @@ class GridView: UIView {
     lazy var emptyView: UIView = self.makeEmptyView()
     lazy var loadingIndicator: UIActivityIndicatorView = self.makeLoadingIndicator()
     lazy var progressLabel: UILabel = self.makeProgressLabel()
-    lazy var maxToastView: UIView = self.makeMaxSizeToast()
+    lazy var maxToastView: UIView = self.makeMaxLimitToast()
 
     // MARK: - Initialization
     
@@ -150,13 +150,13 @@ class GridView: UIView {
         return button
     }
     
-    private func makeMaxSizeToast() -> UIView {
+    private func makeMaxLimitToast() -> UIView {
         let view = UIView()
         view.backgroundColor = UIColor.black.withAlphaComponent(0.85)
         view.layer.cornerRadius = 12
         
         let label = UILabel()
-        label.text = Config.Toast.maxImageSizeText
+        label.text = Config.Toast.maxLimitText
         label.textColor = .white
         label.font = Config.Toast.toastFont
         

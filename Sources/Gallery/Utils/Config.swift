@@ -27,9 +27,7 @@ public struct Config {
 
     public struct Toast {
         public static var toastFont: UIFont = .preferredFont(forTextStyle: .headline)
-        public static var maxImagesSize: Double = 100
         public static var infoImage: UIImage? = nil
-        public static var maxImageSizeText: String = "The attachement size exceeds the 9 MB limit."
         public static var maxLimitText: String = "You can only add up to 10 images."
     }
 	
